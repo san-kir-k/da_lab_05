@@ -58,4 +58,4 @@ namespace NUkkonen {
     };
 
     std::vector<int> Find(const std::string& text, const std::string& pattern);
-};
+}

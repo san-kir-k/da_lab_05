@@ -145,12 +145,15 @@ namespace NUkkonen {
     }
 
     void TSuffixTree::GoSuffixLink(int& matchStat) {
-        char c = Str[STATE.CurrNode->Start];
         if (STATE.CurrNode != Root) {
             TNode* parent = STATE.CurrNode->Parent;
             if (parent != Root) {
                 TNode* suffixNode = parent->SuffixLink;
-                STATE.CurrNode = suffixNode->GetNext(c);
+                int l = STATE.CurrNode->Start;
+                int r = l + STATE.CurrShift;
+                STATE.CurrNode = suffixNode;
+                STATE.CurrShift = STATE.CurrNode->Len();
+                STATE = Go(STATE, l, r);
                 matchStat--;
             } else {
                 STATE.CurrNode = Root;
@@ -170,8 +173,9 @@ namespace NUkkonen {
                 STATE = TState(STATE.CurrNode->GetNext(text[l]), 0);
             } else {
                 int oldL = l;
-                for (int i = 0; i < STATE.CurrNode->Len(); ++i) {
-                    if (text[i + oldL] != Str[i + STATE.CurrNode->Start]) {
+                int oldShift = STATE.CurrShift;
+                for (int i = 0; i < STATE.CurrNode->Len() - oldShift; ++i) {
+                    if (text[i + oldL] != Str[i + STATE.CurrNode->Start + oldShift]) {
                         return matchCount;
                     }
                     matchCount++;
@@ -185,7 +189,7 @@ namespace NUkkonen {
 
     std::vector<int> Find(const std::string& text, const std::string& pattern) {
         std::vector<int> entery;
-        if (!text.length() || !pattern.length()) {
+        if (!text.length() || !pattern.length() || pattern.length() > text.length()) {
             return entery;
         }
         int matchStat = 0;
@@ -210,4 +214,48 @@ namespace NUkkonen {
         }
         return entery;
     }
-};
+}
+
+/*
+Тут моя программа падала, как Стас Барецкий
+abacbba
+aababcbabcbabbabcbbabcabacbbabaaccbaaa
+
+еще меньше случай
+abacbba
+abacbbab
+
+=======
+abacabc
+bcbacbbbabcbbcaaabcbcababacabccaabcbabcabcbababcbcbabcbacbbababcbacbabcbabc
+
+
+случай поменьше
+abacabc
+bcbacbbbabcbbcaaabcbcaba
+
+еще меньше
+abacabc
+abcbcaba
+
+=========
+abacabc
+babacabc
+
+===============
+
+abcbb
+cbcbbcbcbcbbcbcbc
+
+случай меньше
+abcbb
+cbcbbcbcbcbb
+
+еще меньше
+abcbb
+cbcbbcbcbb
+
+самый маленький
+abcbb
+bcbcbb
+*/
